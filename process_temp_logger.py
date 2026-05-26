@@ -12,6 +12,7 @@ Regenerates all outputs (CSV, JSON, figures, README, CODEBOOK) from raw/ files.
 
 Outputs written to the repo root:
   hobo_21732422_2024_temperature.csv
+  hobo_21732422_2024_temperature.geojson
   hobo_21732422_2024_metadata.json
   figures/01_deployment_timeseries.png
   figures/02_calibration_comparison_timeseries.png
@@ -464,6 +465,35 @@ def fig_track_temperature(deploy: pd.DataFrame, out: Path) -> None:
         plt.close(fig)
 
 
+# ── GeoJSON output ────────────────────────────────────────────────────────────
+
+def write_geojson(deploy: pd.DataFrame, out: Path) -> None:
+    """GeoJSON FeatureCollection of all rows that have a valid position."""
+    rows = deploy[deploy["latitude_deg"].notna()].copy()
+    rows["datetime_utc"] = rows["datetime_utc"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [row.longitude_deg, row.latitude_deg],
+            },
+            "properties": {
+                "datetime_utc":      row.datetime_utc,
+                "temp_c_calibrated": round(row.temp_c_calibrated, 4),
+                "temp_c_raw":        round(row.temp_c_raw, 4),
+                "deployment_state":  row.deployment_state,
+                "qc_flag":           int(row.qc_flag),
+            },
+        }
+        for row in rows.itertuples(index=False)
+    ]
+    fc = {"type": "FeatureCollection", "features": features}
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(fc, f, separators=(",", ":"))
+
+
 # ── text outputs ──────────────────────────────────────────────────────────────
 
 def write_readme(out_dir: Path, deploy: pd.DataFrame, cal: dict,
@@ -607,6 +637,12 @@ FILES
 
   hobo_21732422_2024_temperature.csv
         Processed output.  See CODEBOOK.txt.
+
+  hobo_21732422_2024_temperature.geojson
+        GeoJSON FeatureCollection of all records with valid position
+        (41,913 points).  Geometry: WGS-84 Point [lon, lat].  Properties
+        mirror the CSV columns.  Suitable for direct import into QGIS,
+        Kepler.gl, or GitHub's map renderer.
 
   hobo_21732422_2024_metadata.json
         Machine-readable metadata and calibration statistics.
@@ -819,12 +855,13 @@ def main() -> None:
     fig_track_temperature(deploy, fig_dir / "05_deployment_track_temperature.png")
 
     # ── CSV ───────────────────────────────────────────────────────────────────
-    print("Writing CSV …")
+    print("Writing CSV and GeoJSON …")
     csv_df = deploy.copy()
     csv_df["datetime_utc"] = csv_df["datetime_utc"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     col_order = ["datetime_utc", "latitude_deg", "longitude_deg",
                  "temp_c_raw", "temp_c_calibrated", "deployment_state", "qc_flag"]
     csv_df[col_order].to_csv(OUT_DIR / "hobo_21732422_2024_temperature.csv", index=False)
+    write_geojson(deploy, OUT_DIR / "hobo_21732422_2024_temperature.geojson")
 
     # ── metadata JSON ─────────────────────────────────────────────────────────
     print("Writing metadata JSON …")

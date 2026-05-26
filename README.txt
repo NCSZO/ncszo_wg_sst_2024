@@ -128,6 +128,12 @@ FILES
   hobo_21732422_2024_temperature.csv
         Processed output.  See CODEBOOK.txt.
 
+  hobo_21732422_2024_temperature.geojson
+        GeoJSON FeatureCollection of all records with valid position
+        (41,913 points).  Geometry: WGS-84 Point [lon, lat].  Properties
+        mirror the CSV columns.  Suitable for direct import into QGIS,
+        Kepler.gl, or GitHub's map renderer.
+
   hobo_21732422_2024_metadata.json
         Machine-readable metadata and calibration statistics.
 
