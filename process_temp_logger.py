@@ -53,6 +53,10 @@ SBE_ACCURACY_C    = 0.005  # SBE CTD 19p stated accuracy (°C, 1σ)
 SST_MAX_C              = 17.0   # max plausible Sep SST at GNSSA-03; above = deck/air
 COOLING_RATE_C_PER_MIN = 0.05   # |dT/dt| threshold for "still equilibrating to water"
 
+# WaveGlider deployment time (confirmed from cruise log)
+# The HOBO was on the ship until ~17:22 UTC; lat/lon are NaN for pre_water rows.
+WG_RELEASE_UTC = "2024-09-06T10:10:00Z"
+
 # GNSS-A station centroids visited during the 2024 survey (lat, lon)
 # 2024-epoch positions from sites_out.csv; ordered by survey date.
 GNSSA_SITES_2024 = {
@@ -520,10 +524,17 @@ DEPLOYMENT
 
 PRE-DEPLOYMENT PERIOD
 ---------------------
-  The first {n_pre_water} records (until {in_water_start}) carry
-  deployment_state = "pre_water".  The HOBO logger was started on deck while
-  the WaveGlider was already at sea; these readings reflect air / deck
-  temperature (~21–17 °C) rather than sea surface temperature.
+  The WaveGlider was released into the water on 2024-09-06 at 10:10 UTC.
+  The HOBO logger was activated at 15:51 UTC while still on the ship, and
+  was transferred to the WaveGlider and deployed into the ocean at ~17:22 UTC
+  (5.5 hours after the WaveGlider was released).
+
+  The first {n_pre_water} records (15:51–17:21 UTC) carry
+  deployment_state = "pre_water".  They reflect air/deck temperature
+  (~21–11 °C, cooling as the HOBO was moved toward the water) rather than
+  sea surface temperature.  latitude_deg and longitude_deg are NaN for
+  these rows: the telemetry gives the WaveGlider's position (already at
+  sea), which is not the HOBO's location while it was on the ship.
 
   Detection thresholds used:
     temp_c_raw > {SST_MAX_C:.1f} °C  (above max plausible Sep SST at GNSSA-03)
@@ -557,10 +568,13 @@ CALIBRATION
 POSITION
 --------
   WaveGlider lat/lon linearly interpolated from WGMS telemetry
-  (~5-min sampling, raw/wgms_telemetry_2024.csv).  97.3 % of records
-  have position.  The last ~19 h carry NaN (WaveGlider had returned to
-  port; HOBO still logging).  Full telemetry is archived in the companion
-  NCSZO GNSS-A 2024 Raw Data dataset (acoustic ranging).
+  (~5-min sampling, raw/wgms_telemetry_2024.csv).
+  NaN in two periods:
+    - Pre-water ({n_pre_water} rows, 15:51–17:21 UTC Sep 6): HOBO was on
+      the ship; telemetry gives the WaveGlider's position, not the ship's.
+    - Final ~19 h: WaveGlider had returned to port; HOBO still logging.
+  Full telemetry is archived in the companion NCSZO GNSS-A 2024 Raw Data
+  dataset (acoustic ranging).
 
 DATA QUALITY
 ------------
@@ -671,13 +685,17 @@ latitude_deg
   Type    : float64 or NaN
   Units   : decimal degrees North (WGS-84)
   Notes   : WaveGlider position linearly interpolated from WGMS telemetry
-            (~5-min sampling).  NaN for final ~19 h (WaveGlider at port).
+            (~5-min sampling).  NaN in two periods:
+            (1) deployment_state = "pre_water": HOBO was on the ship; the
+                telemetry records the WaveGlider's position (already at
+                sea), which is not the HOBO's location.
+            (2) Final ~19 h: WaveGlider at port, HOBO still logging.
             Rounded to 6 decimal places (~0.1 m precision).
 
 longitude_deg
   Type    : float64 or NaN
   Units   : decimal degrees East (WGS-84); negative = West
-  Notes   : Same interpolation as latitude_deg.
+  Notes   : Same interpolation and NaN conditions as latitude_deg.
 
 temp_c_raw
   Type    : float64
@@ -697,9 +715,12 @@ temp_c_calibrated
 deployment_state
   Type    : string
   Values  :
-    "pre_water"  First {n_pre_water} records (before {in_water_start}).
-                 HOBO was on deck; readings are air/deck temperature,
-                 not sea surface temperature.  Detected by:
+    "pre_water"  First {n_pre_water} records (15:51–17:21 UTC, Sep 6 2024).
+                 The WaveGlider was released 2024-09-06 10:10 UTC; the HOBO
+                 was activated on the ship at 15:51 UTC and entered the water
+                 at ~17:22 UTC.  Readings reflect air/deck temperature, not
+                 SST.  latitude_deg and longitude_deg are NaN for these rows.
+                 Detected by:
                    temp_c_raw > {SST_MAX_C:.1f} °C
                    OR 5-min smoothed |dT/dt| > {COOLING_RATE_C_PER_MIN:.2f} °C/min
     "in_water"   HOBO immersed; valid sea surface temperature.
@@ -773,6 +794,13 @@ def main() -> None:
     n_pre = int((deploy["deployment_state"] == "pre_water").sum())
     in_water_start = deploy.loc[deploy["deployment_state"] == "in_water", "datetime_utc"].iloc[0]
     in_water_start_str = in_water_start.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Pre-water rows: HOBO was on the ship, not on the WaveGlider.
+    # Telemetry positions reflect the WG's location (already at sea) — set NaN.
+    pre_mask = deploy["deployment_state"] == "pre_water"
+    deploy.loc[pre_mask, "latitude_deg"]  = np.nan
+    deploy.loc[pre_mask, "longitude_deg"] = np.nan
+
     n_pos = int(deploy["latitude_deg"].notna().sum())
 
     print(f"\nDeployment state  : {n_pre} pre_water rows; in_water from {in_water_start_str}")
@@ -824,10 +852,13 @@ def main() -> None:
             "sampling_interval_s":   60,
             "raw_timezone":          "PDT (UTC-7)",
             "n_records":             int(len(deploy)),
+            "wg_release_utc":        WG_RELEASE_UTC,
             "pre_water_rows":        n_pre,
             "in_water_start_utc":    in_water_start_str,
             "pre_water_note": (
-                f"First {n_pre} rows: HOBO on deck before water immersion. "
+                f"WaveGlider released {WG_RELEASE_UTC}. "
+                f"HOBO activated on ship at 15:51 UTC; entered water at {in_water_start_str}. "
+                f"First {n_pre} rows are air/deck temperature; lat/lon are NaN (ship position, not WG). "
                 f"Detection: temp > {SST_MAX_C} C OR |dT/dt| > {COOLING_RATE_C_PER_MIN} C/min (5-min smoothed)."
             ),
         },
@@ -850,6 +881,8 @@ def main() -> None:
             "source":               "WaveGlider WGMS telemetry (~5-min) linearly interpolated to 1-min",
             "n_with_position":      n_pos,
             "n_without_position":   int(len(deploy) - n_pos),
+            "nan_reason_1":         f"pre_water rows ({n_pre}): HOBO on ship, telemetry is WG position not ship position",
+            "nan_reason_2":         "final ~19 h: WaveGlider returned to port while HOBO still logging",
         },
         "statistics": {
             "temp_raw_min_c":  round(float(deploy["temp_c_raw"].min()), 4),

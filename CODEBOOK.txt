@@ -21,13 +21,17 @@ latitude_deg
   Type    : float64 or NaN
   Units   : decimal degrees North (WGS-84)
   Notes   : WaveGlider position linearly interpolated from WGMS telemetry
-            (~5-min sampling).  NaN for final ~19 h (WaveGlider at port).
+            (~5-min sampling).  NaN in two periods:
+            (1) deployment_state = "pre_water": HOBO was on the ship; the
+                telemetry records the WaveGlider's position (already at
+                sea), which is not the HOBO's location.
+            (2) Final ~19 h: WaveGlider at port, HOBO still logging.
             Rounded to 6 decimal places (~0.1 m precision).
 
 longitude_deg
   Type    : float64 or NaN
   Units   : decimal degrees East (WGS-84); negative = West
-  Notes   : Same interpolation as latitude_deg.
+  Notes   : Same interpolation and NaN conditions as latitude_deg.
 
 temp_c_raw
   Type    : float64
@@ -47,9 +51,12 @@ temp_c_calibrated
 deployment_state
   Type    : string
   Values  :
-    "pre_water"  First 91 records (before 2024-09-06T17:22:00Z).
-                 HOBO was on deck; readings are air/deck temperature,
-                 not sea surface temperature.  Detected by:
+    "pre_water"  First 91 records (15:51–17:21 UTC, Sep 6 2024).
+                 The WaveGlider was released 2024-09-06 10:10 UTC; the HOBO
+                 was activated on the ship at 15:51 UTC and entered the water
+                 at ~17:22 UTC.  Readings reflect air/deck temperature, not
+                 SST.  latitude_deg and longitude_deg are NaN for these rows.
+                 Detected by:
                    temp_c_raw > 17.0 °C
                    OR 5-min smoothed |dT/dt| > 0.05 °C/min
     "in_water"   HOBO immersed; valid sea surface temperature.

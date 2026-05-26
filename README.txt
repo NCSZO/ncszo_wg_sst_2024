@@ -44,10 +44,17 @@ DEPLOYMENT
 
 PRE-DEPLOYMENT PERIOD
 ---------------------
-  The first 91 records (until 2024-09-06T17:22:00Z) carry
-  deployment_state = "pre_water".  The HOBO logger was started on deck while
-  the WaveGlider was already at sea; these readings reflect air / deck
-  temperature (~21–17 °C) rather than sea surface temperature.
+  The WaveGlider was released into the water on 2024-09-06 at 10:10 UTC.
+  The HOBO logger was activated at 15:51 UTC while still on the ship, and
+  was transferred to the WaveGlider and deployed into the ocean at ~17:22 UTC
+  (5.5 hours after the WaveGlider was released).
+
+  The first 91 records (15:51–17:21 UTC) carry
+  deployment_state = "pre_water".  They reflect air/deck temperature
+  (~21–11 °C, cooling as the HOBO was moved toward the water) rather than
+  sea surface temperature.  latitude_deg and longitude_deg are NaN for
+  these rows: the telemetry gives the WaveGlider's position (already at
+  sea), which is not the HOBO's location while it was on the ship.
 
   Detection thresholds used:
     temp_c_raw > 17.0 °C  (above max plausible Sep SST at GNSSA-03)
@@ -81,10 +88,13 @@ CALIBRATION
 POSITION
 --------
   WaveGlider lat/lon linearly interpolated from WGMS telemetry
-  (~5-min sampling, raw/wgms_telemetry_2024.csv).  97.3 % of records
-  have position.  The last ~19 h carry NaN (WaveGlider had returned to
-  port; HOBO still logging).  Full telemetry is archived in the companion
-  NCSZO GNSS-A 2024 Raw Data dataset (acoustic ranging).
+  (~5-min sampling, raw/wgms_telemetry_2024.csv).
+  NaN in two periods:
+    - Pre-water (91 rows, 15:51–17:21 UTC Sep 6): HOBO was on
+      the ship; telemetry gives the WaveGlider's position, not the ship's.
+    - Final ~19 h: WaveGlider had returned to port; HOBO still logging.
+  Full telemetry is archived in the companion NCSZO GNSS-A 2024 Raw Data
+  dataset (acoustic ranging).
 
 DATA QUALITY
 ------------

@@ -17,9 +17,10 @@
     "sampling_interval_s": 60,
     "raw_timezone": "PDT (UTC-7)",
     "n_records": 43174,
+    "wg_release_utc": "2024-09-06T10:10:00Z",
     "pre_water_rows": 91,
     "in_water_start_utc": "2024-09-06T17:22:00Z",
-    "pre_water_note": "First 91 rows: HOBO on deck before water immersion. Detection: temp > 17.0 C OR |dT/dt| > 0.05 C/min (5-min smoothed)."
+    "pre_water_note": "WaveGlider released 2024-09-06T10:10:00Z. HOBO activated on ship at 15:51 UTC; entered water at 2024-09-06T17:22:00Z. First 91 rows are air/deck temperature; lat/lon are NaN (ship position, not WG). Detection: temp > 17.0 C OR |dT/dt| > 0.05 C/min (5-min smoothed)."
   },
   "calibration": {
     "facility": "ONC Marine Technology Centre, Victoria BC (48.6495 N, 123.4455 W)",
@@ -38,8 +39,10 @@
   },
   "position": {
     "source": "WaveGlider WGMS telemetry (~5-min) linearly interpolated to 1-min",
-    "n_with_position": 42004,
-    "n_without_position": 1170
+    "n_with_position": 41913,
+    "n_without_position": 1261,
+    "nan_reason_1": "pre_water rows (91): HOBO on ship, telemetry is WG position not ship position",
+    "nan_reason_2": "final ~19 h: WaveGlider returned to port while HOBO still logging"
   },
   "statistics": {
     "temp_raw_min_c": 10.0252,
