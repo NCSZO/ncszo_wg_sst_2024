@@ -136,8 +136,9 @@ FILES
   figures/03_calibration_offset_convergence.png
         CTD-HOBO difference vs time, showing warmup and equilibrium.
 
-  figures/04_calibration_scatter.png
-        HOBO (raw and calibrated) vs CTD scatter, equilibrated region.
+  figures/04_calibration_residuals.png
+        HOBO minus CTD residuals vs CTD temperature, equilibrated region,
+        split into heating and cooling phases to show thermal-lag bias.
 
   figures/05_deployment_track_temperature.png
         WaveGlider track coloured by calibrated SST (in-water only).

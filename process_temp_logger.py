@@ -53,6 +53,25 @@ SBE_ACCURACY_C    = 0.005  # SBE CTD 19p stated accuracy (°C, 1σ)
 SST_MAX_C              = 17.0   # max plausible Sep SST at GNSSA-03; above = deck/air
 COOLING_RATE_C_PER_MIN = 0.05   # |dT/dt| threshold for "still equilibrating to water"
 
+# GNSS-A station centroids visited during the 2024 survey (lat, lon)
+# 2024-epoch positions from sites_out.csv; ordered by survey date.
+GNSSA_SITES_2024 = {
+    "GNSSA-04": (48.2709, -126.4357),   # ~Sep  8
+    "GNSSA-01": (48.1802, -127.1924),   # ~Sep 13
+    "GNSSA-02": (48.5574, -127.1655),   # ~Sep 19
+    "GNSSA-03": (48.7149, -126.8431),   # ~Sep 24
+    "GNSSA-06": (48.8482, -127.4685),   # ~Sep 28
+}
+ON_SITE_RADIUS_KM = 6.0
+
+SITE_COLORS = {
+    "GNSSA-01": "#aec7e8",
+    "GNSSA-02": "#ffbb78",
+    "GNSSA-03": "#98df8a",
+    "GNSSA-04": "#ff9896",
+    "GNSSA-06": "#c5b0d5",
+}
+
 # ── loaders ───────────────────────────────────────────────────────────────────
 
 def load_hobo_deployment(path: Path) -> pd.DataFrame:
@@ -120,6 +139,10 @@ def compute_calibration(hobo_cal: pd.DataFrame, ctd_hz: pd.DataFrame,
     t0 = merged["datetime_utc"].iloc[0]
     merged["elapsed_min"] = (merged["datetime_utc"] - t0).dt.total_seconds() / 60.0
 
+    # Heating/cooling phase: sign of 5-min smoothed CTD slope
+    ctd_smooth = merged["ctd_c"].rolling(5, center=True, min_periods=1).mean()
+    merged["phase"] = np.where(ctd_smooth.diff() >= 0, "heating", "cooling")
+
     equil   = merged.iloc[skip_min:-1].copy()
     applied = round(float(equil["diff"].median()), 3)
 
@@ -179,6 +202,59 @@ def interpolate_position(deploy: pd.DataFrame, telemetry: pd.DataFrame) -> pd.Da
     return out
 
 
+# ── station proximity ─────────────────────────────────────────────────────────
+
+def haversine_km(lat1: np.ndarray, lon1: np.ndarray,
+                 lat2: float, lon2: float) -> np.ndarray:
+    R = 6371.0
+    dlat = np.radians(lat2 - lat1)
+    dlon = np.radians(lon2 - lon1)
+    a = (np.sin(dlat / 2) ** 2
+         + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon / 2) ** 2)
+    return 2 * R * np.arcsin(np.sqrt(a))
+
+
+def compute_station_intervals(
+    telemetry: pd.DataFrame,
+    sites: dict = GNSSA_SITES_2024,
+    radius_km: float = ON_SITE_RADIUS_KM,
+) -> list[tuple[str, pd.Timestamp, pd.Timestamp]]:
+    """Return (site_name, t_start, t_end) for each contiguous on-site period."""
+    raw_intervals: list[tuple[str, pd.Timestamp, pd.Timestamp]] = []
+    for site_name, (lat0, lon0) in sites.items():
+        dist = haversine_km(
+            telemetry["latitude_deg"].values, telemetry["longitude_deg"].values,
+            lat0, lon0,
+        )
+        on_site = dist <= radius_km
+        changes = np.diff(on_site.astype(int), prepend=0, append=0)
+        starts  = np.where(changes == 1)[0]
+        ends    = np.where(changes == -1)[0]
+        for s, e in zip(starts, ends):
+            t0 = telemetry["datetime_utc"].iloc[s]
+            t1 = telemetry["datetime_utc"].iloc[min(e, len(telemetry) - 1)]
+            if t1 > t0:
+                raw_intervals.append((site_name, t0, t1))
+
+    # Merge fragments for the same site that are within 30 min of each other
+    from collections import defaultdict
+    by_site: dict[str, list[tuple]] = defaultdict(list)
+    for name, t0, t1 in raw_intervals:
+        by_site[name].append((t0, t1))
+    merged_intervals = []
+    for name, segs in by_site.items():
+        segs.sort()
+        cur_t0, cur_t1 = segs[0]
+        for t0, t1 in segs[1:]:
+            if (t0 - cur_t1).total_seconds() / 60 <= 30:
+                cur_t1 = max(cur_t1, t1)
+            else:
+                merged_intervals.append((name, cur_t0, cur_t1))
+                cur_t0, cur_t1 = t0, t1
+        merged_intervals.append((name, cur_t0, cur_t1))
+    return merged_intervals
+
+
 # ── figures ───────────────────────────────────────────────────────────────────
 
 RC = {
@@ -195,40 +271,60 @@ COL_CAL    = "#2166ac"
 COL_CTD    = "#1a9641"
 COL_WARM   = "#fee090"
 COL_PREDEP = "#bdbdbd"
+COL_HEAT   = "#fdae61"   # warm orange — heating phase
+COL_COOL   = "#abd9e9"   # cool blue  — cooling phase
 
 
-def fig_deployment(deploy: pd.DataFrame, applied_offset: float, out: Path) -> None:
+def _shade_phases(ax, elapsed_min: pd.Series, phase: pd.Series) -> None:
+    """Background bands for heating / cooling phases (axes-space y so ylim-independent)."""
+    heat = (phase == "heating").values
+    ax.fill_between(elapsed_min.values, 0, 1, where=heat,
+                    alpha=0.12, color=COL_HEAT,
+                    transform=ax.get_xaxis_transform(),
+                    label="Warming phase", zorder=0)
+    ax.fill_between(elapsed_min.values, 0, 1, where=~heat,
+                    alpha=0.12, color=COL_COOL,
+                    transform=ax.get_xaxis_transform(),
+                    label="Cooling phase", zorder=0)
+
+
+def fig_deployment(deploy: pd.DataFrame, applied_offset: float,
+                   site_intervals: list, out: Path) -> None:
     inw = deploy[deploy["deployment_state"] == "in_water"]
     pre = deploy[deploy["deployment_state"] == "pre_water"]
 
     with plt.style.context(RC):
-        fig, axes = plt.subplots(2, 1, figsize=(12, 6), gridspec_kw={"height_ratios": [4, 1]})
+        fig, ax = plt.subplots(figsize=(13, 5))
 
-        ax = axes[0]
+        # Station visit bands (lowest z-order)
+        labeled: set[str] = set()
+        for site_name, t0, t1 in sorted(site_intervals, key=lambda x: x[1]):
+            lbl = site_name if site_name not in labeled else "_nolegend_"
+            ax.axvspan(t0, t1, color=SITE_COLORS.get(site_name, "#dddddd"),
+                       alpha=0.40, lw=0, label=lbl, zorder=0)
+            labeled.add(site_name)
+            mid = t0 + (t1 - t0) / 2
+            ax.text(mid, 0.97, site_name,
+                    transform=ax.get_xaxis_transform(),
+                    ha="center", va="top", fontsize=7, color="0.35", clip_on=True)
+
         if not pre.empty:
             ax.plot(pre["datetime_utc"], pre["temp_c_calibrated"],
                     lw=0.6, color=COL_PREDEP, label="Pre-deployment (deck/air)", zorder=1)
+        ax.plot(inw["datetime_utc"], inw["temp_c_raw"],
+                lw=0.5, color=COL_RAW, alpha=0.35, label="Raw (in water)", zorder=2)
         ax.plot(inw["datetime_utc"], inw["temp_c_calibrated"],
                 lw=0.8, color=COL_CAL, label="Calibrated (in water)", zorder=3)
-        ax.plot(inw["datetime_utc"], inw["temp_c_raw"],
-                lw=0.5, color=COL_RAW, alpha=0.4, label="Raw (in water)", zorder=2)
+
         ax.set_ylabel("Temperature (°C)")
         ax.set_title(
             "HOBO MX2203 S/N 21732422 — WaveGlider SV3-271 surface temperature 2024\n"
-            f"Calibration correction applied: +{applied_offset:.3f} °C"
+            f"Calibration correction +{applied_offset:.3f} °C  │  "
+            "Shaded bands = GNSS-A station visits"
         )
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
         fig.autofmt_xdate(rotation=30, ha="right")
-        ax.legend(frameon=False)
-
-        ax2 = axes[1]
-        ax2.plot(inw["datetime_utc"],
-                 inw["temp_c_calibrated"] - inw["temp_c_raw"],
-                 lw=0.6, color="0.5")
-        ax2.axhline(applied_offset, color=COL_CAL, lw=1.0, ls="--")
-        ax2.set_ylabel("Cal − Raw\n(°C)")
-        ax2.set_ylim(applied_offset - 0.005, applied_offset + 0.005)
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        ax.legend(frameon=False, fontsize=9, ncol=4, loc="upper left")
 
         fig.tight_layout()
         fig.savefig(out)
@@ -238,19 +334,22 @@ def fig_deployment(deploy: pd.DataFrame, applied_offset: float, out: Path) -> No
 def fig_calibration_comparison(merged: pd.DataFrame, skip_min: int, out: Path) -> None:
     with plt.style.context(RC):
         fig, ax = plt.subplots(figsize=(12, 4))
-        ax.axvspan(0, skip_min, color=COL_WARM, alpha=0.5,
-                   label=f"Warmup excluded (< {skip_min} min)")
+        _shade_phases(ax, merged["elapsed_min"], merged["phase"])
+        ax.axvspan(0, skip_min, color=COL_WARM, alpha=0.55,
+                   label=f"Warmup excluded (< {skip_min} min)", zorder=1)
         ax.plot(merged["elapsed_min"], merged["ctd_c"],
-                lw=1.2, color=COL_CTD, label="SBE CTD reference (1 Hz, resampled to 1 min)")
+                lw=1.2, color=COL_CTD, label="SBE CTD reference (1 Hz → 1 min)", zorder=3)
         ax.plot(merged["elapsed_min"], merged["hobo_c"],
-                lw=1.0, color=COL_RAW, ls="--", label="HOBO raw (1 min)")
+                lw=1.0, color=COL_RAW, ls="--", label="HOBO raw (1 min)", zorder=3)
         ax.set_xlabel("Time since tank immersion (min)")
         ax.set_ylabel("Temperature (°C)")
         ax.set_title(
-            "Tank calibration: HOBO MX2203 vs SBE CTD 19p S/N 7036\n"
-            "ONC Integration Testing facility, 2024-11-05 to 2024-11-07"
+            "Tank calibration: HOBO MX2203 vs SBE CTD 19p S/N 7036  —  "
+            "ONC Integration Testing, 2024-11-05 to 2024-11-07\n"
+            "HOBO thermal lag (τ ≈ 5 min): CTD leads HOBO on warming and cooling — "
+            "asymmetric sampling of heating/cooling biases the median offset"
         )
-        ax.legend(frameon=False)
+        ax.legend(frameon=False, ncol=3)
         fig.tight_layout()
         fig.savefig(out)
         plt.close(fig)
@@ -260,43 +359,72 @@ def fig_calibration_offset(merged: pd.DataFrame, cal: dict, out: Path) -> None:
     skip    = cal["equilibration_period_min"]
     applied = cal["applied_offset_c"]
     std     = cal["offset_std_c"]
+
+    # Zoom y to equilibrated region; warmup spike is large negative and off-scale
+    equil_diff = merged["diff"].iloc[skip:-1]
+    ylo = equil_diff.quantile(0.005) - 0.015
+    yhi = equil_diff.quantile(0.995) + 0.015
+    spike_val = merged["diff"].iloc[0]
+
     with plt.style.context(RC):
         fig, ax = plt.subplots(figsize=(12, 4))
-        ax.axvspan(0, skip, color=COL_WARM, alpha=0.5,
-                   label=f"Warmup excluded (< {skip} min)")
+        _shade_phases(ax, merged["elapsed_min"], merged["phase"])
+        ax.axvspan(0, skip, color=COL_WARM, alpha=0.55,
+                   label=f"Warmup excluded (< {skip} min)", zorder=1)
         ax.plot(merged["elapsed_min"], merged["diff"],
-                lw=0.7, color="0.5", label="CTD − HOBO (°C)")
+                lw=0.7, color="0.5", label="CTD − HOBO (°C)", zorder=3)
         ax.axhline(0, color="0.7", lw=0.8, ls=":")
         ax.axhline(applied, color=COL_CAL, lw=1.5, ls="--",
-                   label=f"Applied offset = +{applied:.3f} °C (median of equilibrated)")
+                   label=f"Applied offset +{applied:.3f} °C (median, equilibrated)", zorder=4)
         ax.axhspan(applied - std, applied + std, color=COL_CAL, alpha=0.15,
-                   label=f"±1σ = ±{std:.3f} °C")
+                   label=f"±1σ = ±{std:.3f} °C", zorder=2)
         ax.axvline(skip, color=COL_RAW, lw=1.0, ls=":", alpha=0.6)
+        ax.set_ylim(ylo, yhi)
+        ax.text(0.01, 0.04,
+                f"Initial warmup spike ({spike_val:.1f} °C) is off scale",
+                transform=ax.transAxes, fontsize=8, color="0.45")
         ax.set_xlabel("Time since tank immersion (min)")
         ax.set_ylabel("CTD − HOBO (°C)")
-        ax.set_title("Calibration offset convergence — HOBO reads cold at equilibrium")
-        ax.legend(frameon=False)
+        ax.set_title(
+            "Calibration offset convergence — y-axis clipped to equilibrated range\n"
+            "Bias from unequal heating/cooling sampling is visible in the oscillation envelope"
+        )
+        ax.legend(frameon=False, ncol=2)
         fig.tight_layout()
         fig.savefig(out)
         plt.close(fig)
 
 
-def fig_calibration_scatter(equil: pd.DataFrame, applied_offset: float, out: Path) -> None:
-    x     = equil["ctd_c"].values
-    y_raw = equil["hobo_c"].values
-    y_cal = y_raw + applied_offset
-    lo = min(x.min(), y_raw.min()) - 0.02
-    hi = max(x.max(), y_cal.max()) + 0.02
+def fig_calibration_residual(equil: pd.DataFrame, applied_offset: float, out: Path) -> None:
+    """HOBO − CTD residuals vs temperature, split by heating/cooling phase."""
+    x       = equil["ctd_c"].values
+    res_raw = equil["hobo_c"].values - x
+    res_cal = res_raw + applied_offset
+    heat    = (equil["phase"].values == "heating")
+
+    p     = np.polyfit(x, res_cal, 1)
+    x_fit = np.linspace(x.min(), x.max(), 200)
+
     with plt.style.context(RC):
-        fig, ax = plt.subplots(figsize=(5, 5))
-        ax.scatter(x, y_raw, s=3, alpha=0.25, color=COL_RAW, label="HOBO raw")
-        ax.scatter(x, y_cal, s=3, alpha=0.25, color=COL_CAL, label="HOBO calibrated")
-        ax.plot([lo, hi], [lo, hi], "k--", lw=0.8, label="1:1 line")
-        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
-        ax.set_xlabel("SBE CTD reference (°C)")
-        ax.set_ylabel("HOBO temperature (°C)")
-        ax.set_title("Calibration scatter — equilibrated region only")
-        ax.legend(frameon=False, markerscale=3)
+        fig, ax = plt.subplots(figsize=(7, 5))
+        ax.scatter(x[~heat], res_raw[~heat], s=3, alpha=0.15,
+                   color=COL_COOL, label="Before cal — cooling")
+        ax.scatter(x[heat],  res_raw[heat],  s=3, alpha=0.15,
+                   color=COL_HEAT, label="Before cal — warming")
+        ax.scatter(x[~heat], res_cal[~heat], s=4, alpha=0.35,
+                   color="#4393c3", label="After cal — cooling")
+        ax.scatter(x[heat],  res_cal[heat],  s=4, alpha=0.35,
+                   color="#d6604d", label="After cal — warming")
+        ax.axhline(0, color="0.3", lw=0.8, ls="--", label="Zero residual")
+        ax.plot(x_fit, np.polyval(p, x_fit), color="0.4", lw=1.2, ls=":",
+                label=f"Linear fit (after cal): slope {p[0]:.4f} °C/°C")
+        ax.set_xlabel("SBE CTD reference temperature (°C)")
+        ax.set_ylabel("HOBO − CTD  (°C)")
+        ax.set_title(
+            "Calibration residuals — equilibrated region\n"
+            "Warming/cooling split reveals thermal-lag bias in the applied offset"
+        )
+        ax.legend(frameon=False, fontsize=8, markerscale=2.5, ncol=2)
         fig.tight_layout()
         fig.savefig(out)
         plt.close(fig)
@@ -484,8 +612,9 @@ FILES
   figures/03_calibration_offset_convergence.png
         CTD-HOBO difference vs time, showing warmup and equilibrium.
 
-  figures/04_calibration_scatter.png
-        HOBO (raw and calibrated) vs CTD scatter, equilibrated region.
+  figures/04_calibration_residuals.png
+        HOBO minus CTD residuals vs CTD temperature, equilibrated region,
+        split into heating and cooling phases to show thermal-lag bias.
 
   figures/05_deployment_track_temperature.png
         WaveGlider track coloured by calibrated SST (in-water only).
@@ -615,6 +744,12 @@ def main() -> None:
     telemetry = load_telemetry(TELEMETRY_CSV)
     print(f"  {len(telemetry):,} valid rows")
 
+    print("Computing station on-site intervals …")
+    site_intervals = compute_station_intervals(telemetry)
+    for name, t0, t1 in sorted(site_intervals, key=lambda x: x[1]):
+        dur_h = (t1 - t0).total_seconds() / 3600
+        print(f"  {name}: {t0.strftime('%Y-%m-%d %H:%M')} → {t1.strftime('%Y-%m-%d %H:%M')} ({dur_h:.1f} h)")
+
     # ── calibration ───────────────────────────────────────────────────────────
     print("\nComputing calibration offset …")
     cal_all = compute_calibration(hobo_cal, ctd, skip_min=EQUILIBRATION_MIN)
@@ -646,10 +781,13 @@ def main() -> None:
     # ── figures ───────────────────────────────────────────────────────────────
     print("\nGenerating figures …")
     fig_dir = OUT_DIR / "figures"
-    fig_deployment(deploy, cal["applied_offset_c"], fig_dir / "01_deployment_timeseries.png")
-    fig_calibration_comparison(merged, EQUILIBRATION_MIN, fig_dir / "02_calibration_comparison_timeseries.png")
+    fig_deployment(deploy, cal["applied_offset_c"], site_intervals,
+                   fig_dir / "01_deployment_timeseries.png")
+    fig_calibration_comparison(merged, EQUILIBRATION_MIN,
+                               fig_dir / "02_calibration_comparison_timeseries.png")
     fig_calibration_offset(merged, cal, fig_dir / "03_calibration_offset_convergence.png")
-    fig_calibration_scatter(equil, cal["applied_offset_c"], fig_dir / "04_calibration_scatter.png")
+    fig_calibration_residual(equil, cal["applied_offset_c"],
+                             fig_dir / "04_calibration_residuals.png")
     fig_track_temperature(deploy, fig_dir / "05_deployment_track_temperature.png")
 
     # ── CSV ───────────────────────────────────────────────────────────────────
