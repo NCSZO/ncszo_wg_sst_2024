@@ -44,10 +44,10 @@ DEPLOYMENT
 
 PRE-DEPLOYMENT PERIOD
 ---------------------
-  The WaveGlider was released into the water on 2024-09-06 at 10:10 UTC.
-  The HOBO logger was activated at 15:51 UTC while still on the ship, and
-  was transferred to the WaveGlider and deployed into the ocean at ~17:22 UTC
-  (5.5 hours after the WaveGlider was released).
+  The WaveGlider was released into the water on 2024-09-06 at 17:10 UTC
+  (10:10 PDT).  The HOBO logger was activated at 15:51 UTC while still on
+  the ship, and was transferred to the WaveGlider and deployed into the
+  ocean at ~17:22 UTC (12 minutes after the WaveGlider was released).
 
   The first 91 records (15:51–17:21 UTC) carry
   deployment_state = "pre_water".  They reflect air/deck temperature

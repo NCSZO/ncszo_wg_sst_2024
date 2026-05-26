@@ -52,9 +52,9 @@ deployment_state
   Type    : string
   Values  :
     "pre_water"  First 91 records (15:51–17:21 UTC, Sep 6 2024).
-                 The WaveGlider was released 2024-09-06 10:10 UTC; the HOBO
-                 was activated on the ship at 15:51 UTC and entered the water
-                 at ~17:22 UTC.  Readings reflect air/deck temperature, not
+                 The WaveGlider was released 2024-09-06 17:10 UTC (10:10 PDT);
+                 the HOBO was activated on the ship at 15:51 UTC and entered
+                 the water at ~17:22 UTC, 12 min after WG release.  Readings reflect air/deck temperature, not
                  SST.  latitude_deg and longitude_deg are NaN for these rows.
                  Detected by:
                    temp_c_raw > 17.0 °C

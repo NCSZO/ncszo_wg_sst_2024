@@ -56,7 +56,7 @@ COOLING_RATE_C_PER_MIN = 0.05   # |dT/dt| threshold for "still equilibrating to 
 
 # WaveGlider deployment time (confirmed from cruise log)
 # The HOBO was on the ship until ~17:22 UTC; lat/lon are NaN for pre_water rows.
-WG_RELEASE_UTC = "2024-09-06T10:10:00Z"
+WG_RELEASE_UTC = "2024-09-06T17:10:00Z"   # 10:10 PDT (UTC-7)
 
 # GNSS-A station centroids visited during the 2024 survey (lat, lon)
 # 2024-epoch positions from sites_out.csv; ordered by survey date.
@@ -554,10 +554,10 @@ DEPLOYMENT
 
 PRE-DEPLOYMENT PERIOD
 ---------------------
-  The WaveGlider was released into the water on 2024-09-06 at 10:10 UTC.
-  The HOBO logger was activated at 15:51 UTC while still on the ship, and
-  was transferred to the WaveGlider and deployed into the ocean at ~17:22 UTC
-  (5.5 hours after the WaveGlider was released).
+  The WaveGlider was released into the water on 2024-09-06 at 17:10 UTC
+  (10:10 PDT).  The HOBO logger was activated at 15:51 UTC while still on
+  the ship, and was transferred to the WaveGlider and deployed into the
+  ocean at ~17:22 UTC (12 minutes after the WaveGlider was released).
 
   The first {n_pre_water} records (15:51–17:21 UTC) carry
   deployment_state = "pre_water".  They reflect air/deck temperature
@@ -752,9 +752,9 @@ deployment_state
   Type    : string
   Values  :
     "pre_water"  First {n_pre_water} records (15:51–17:21 UTC, Sep 6 2024).
-                 The WaveGlider was released 2024-09-06 10:10 UTC; the HOBO
-                 was activated on the ship at 15:51 UTC and entered the water
-                 at ~17:22 UTC.  Readings reflect air/deck temperature, not
+                 The WaveGlider was released 2024-09-06 17:10 UTC (10:10 PDT);
+                 the HOBO was activated on the ship at 15:51 UTC and entered
+                 the water at ~17:22 UTC, 12 min after WG release.  Readings reflect air/deck temperature, not
                  SST.  latitude_deg and longitude_deg are NaN for these rows.
                  Detected by:
                    temp_c_raw > {SST_MAX_C:.1f} °C

@@ -23,9 +23,9 @@ the repo root and `figures/`. Nothing else needed; no network access.
 
 ## Deployment Timeline (Confirmed)
 
-- 2024-09-06 10:10 UTC  WaveGlider released into water
 - 2024-09-06 15:51 UTC  HOBO activated — on the ship, showing ~21 °C (air)
-- 2024-09-06 17:22 UTC  HOBO enters water, temperature drops to ~11 °C
+- 2024-09-06 17:10 UTC  WaveGlider released into water (10:10 PDT)
+- 2024-09-06 17:22 UTC  HOBO enters water, temperature drops to ~11 °C  (12 min after WG release)
 - 2024-10-06 15:24 UTC  Last HOBO record (WaveGlider already back at port ~19 h earlier)
 
 The first 91 rows (`deployment_state = "pre_water"`) are air/deck temperature.
