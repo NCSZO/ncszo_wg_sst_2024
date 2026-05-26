@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>[#EN-8285] Compare the HOBO temperature sensor to a SeaBird CTD</title>
+    <meta http-equiv="Content-Type" Content="application/vnd.ms-word; charset=UTF-8">
+        <style type="text/css">
+
+.tableBorder, .grid
+{
+    background-color: #fff;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableBorder td, .grid td
+{
+    vertical-align: top;
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+.noPadding
+{
+    padding: 0 !important;
+}
+
+h3 .subText
+{
+    font-size: 60%;
+    font-weight: normal;
+}
+
+.tabLabel
+{
+    font-weight: bold;
+    border: 1px solid #ccc;
+    border-bottom:none;
+    padding: 2px;
+    display: inline;
+}
+
+td.blank
+{
+    padding: 0;
+    margin: 0;
+}
+
+.blank td
+{
+    border: none;
+}
+
+#descriptionArea
+{
+    margin: 0;
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+hr
+{
+    border-top:1px solid #aaa;
+}
+
+hr.fullcontent
+{
+  height: 15px;
+  padding: 10px 0;
+  background: #fff url('https://jira.oceannetworks.ca/images/icons/hr.gif') no-repeat scroll center;
+}
+
+</style>
+
+</head>
+<body>
+
+<table class="tableBorder" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td bgcolor="#f0f0f0" width="100%" colspan="2" valign="top">
+                            <h3 class="formtitle">
+                        [EN-8285]&nbsp;<a href="https://jira.oceannetworks.ca/browse/EN-8285">Compare the HOBO temperature sensor to a SeaBird CTD</a>
+            <span class="subText">
+               Created: 05 Nov 2024                   &nbsp;Updated: 19 Sep 2025
+
+                                    &nbsp;Due: 29 Nov 2024
+                                                    &nbsp;Resolved: 15 Nov 2024
+                            </span>
+            </h3>
+        </td>
+    </tr>
+    <tr>
+        <td width="20%"><b>Status:</b></td>
+        <td width="80%">Closed</td>
+    </tr>
+    <tr>
+        <td width="20%"><b>Project:</b></td>
+        <td width="80%"><a href="https://jira.oceannetworks.ca/secure/BrowseProject.jspa?id=10435">Engineering </a></td>
+    </tr>
+
+        <tr>
+            <td><b>Component/s:</b></td>
+            <td>
+                                        <a title="Test and Development - Test and Development"
+                href="https://jira.oceannetworks.ca/issues/?jql=project%3D10435%20AND%20%22component%22%3D11977%20ORDER%20BY%20priority%20ASC"
+            >Test and Development</a>                        </td>
+    </tr>
+    
+
+        <tr>
+            <td><b>Affects Version/s:</b></td>
+            <td>
+                            None
+                </td>
+    </tr>
+    
+
+        <tr>
+            <td><b>Fix Version/s:</b></td>
+            <td>
+                            None
+                </td>
+    </tr>
+    
+    </table>
+
+<br />
+<table class="grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td bgcolor="#f0f0f0" valign="top" width="20%">
+            <b>Type:</b>
+        </td>
+        <td bgcolor="#ffffff" valign="top"  width="30%" >
+            Task
+        </td>
+
+                    <td bgcolor="#f0f0f0">
+                <b>Priority:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" nowrap>
+                Major
+            </td>
+            </tr>
+    <tr>
+                        <td bgcolor="#f0f0f0" valign="top" width="20%">
+                <b>Reporter:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top"  width="30%" >
+                                            <a class="user-hover" rel="matttradewell" id="word_reporter_matttradewell" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=matttradewell">Matt Tradewell</a>
+                            </td>
+        
+                    <td bgcolor="#f0f0f0" width="20%">
+                <b>Assignee:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" nowrap  width="30%" >
+                                            <a class="user-hover" rel="shanetheobald" id="word_assignee_shanetheobald" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=shanetheobald">Shane Theobald</a>
+                            </td>
+            </tr>
+    	<tr>
+		<td bgcolor="#f0f0f0" width="20%">
+			<b>Resolution:</b>
+		</td>
+		<td bgcolor="#ffffff" valign="top" width="30%" nowrap>
+                            Fixed
+                    </td>
+                    <td bgcolor="#f0f0f0" width="20%">
+                <b>Votes:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" width="30%" nowrap>
+                0
+            </td>
+        
+    </tr>
+    
+        <tr>
+        <td bgcolor="#f0f0f0" width="20%">
+            <b>Labels:</b>
+        </td>
+        <td id="labels-172829-value" class="value" bgcolor="#ffffff" valign="top" colspan="3" nowrap>
+                            None
+                    </td>
+    </tr>
+    
+    	<tr>
+        		<td bgcolor="#f0f0f0" width="20%"><b>Remaining Estimate:</b></td>
+        <td bgcolor="#ffffff" valign="top" nowrap width="80%" colspan="3">
+                            Not Specified
+            		</td>
+    </tr>
+    <tr>
+                <td bgcolor="#f0f0f0" width="20%"><b>Time Spent:</b></td>
+		<td bgcolor="#ffffff" valign="top" nowrap width="80%" colspan="3">
+                            Not Specified
+            		</td>
+	</tr>
+    <tr>
+                <td bgcolor="#f0f0f0" width="20%"><b>Original Estimate:</b></td>
+		<td bgcolor="#ffffff" valign="top" nowrap width="80%" colspan="3">
+                            Not Specified
+            		</td>
+    </tr>
+    
+    </table>
+
+
+
+    <br />
+
+    	<table class="grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+            
+
+                <tr>
+            <td bgcolor="#f0f0f0" width=20% valign=top>
+                <b>Attachments:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top">
+                                    <img src="https://jira.oceannetworks.ca/images/icons/attach/excel.gif" height="16" width="16" border="0" alt="Microsoft Word" role="presentation">
+                    21732422 2024-11-07 07_37_50 PST (Data PST).xlsx &nbsp;&nbsp;&nbsp;
+                                    <img src="https://jira.oceannetworks.ca/images/icons/attach/excel.gif" height="16" width="16" border="0" alt="Microsoft Word" role="presentation">
+                    HOBO_Reference_CTD_temperature_comparison.xlsx &nbsp;&nbsp;&nbsp;
+                                    <img src="https://jira.oceannetworks.ca/images/icons/attach/excel.gif" height="16" width="16" border="0" alt="Microsoft Word" role="presentation">
+                    HOBO_vs_Reference_temperature_difference.xlsx &nbsp;&nbsp;&nbsp;
+                                    <img src="https://jira.oceannetworks.ca/images/icons/attach/text.gif" height="16" width="16" border="0" alt="Text File" role="presentation">
+                    SBECTD19p7036_Temperature_20241105T213800Z_20241107T153659Z-NaN_clean_ODV.txt &nbsp;&nbsp;&nbsp;
+                                    <img src="https://jira.oceannetworks.ca/images/icons/attach/image.gif" height="16" width="16" border="0" alt="PNG File" role="presentation">
+                    Screenshot (106).png &nbsp;&nbsp;&nbsp;
+                            </td>
+        </tr>
+        
+    
+
+
+
+                                    <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Bill work to Customer:</b></td>
+                <td id="customfield_10794-172829-value" class="value" bgcolor="#ffffff" width="80%">    ONC Internal 
+</td>
+            </tr>
+                                                                                                                                                                                                </table>
+
+    <br/>
+
+    <table cellpadding="2" cellspacing="0" border="0" width="100%" align="center">
+    <tr>
+        <td bgcolor="#bbbbbb" width="1%" nowrap align="center">
+            &nbsp;<font color="#ffffff"><b>Description</b></font>&nbsp;
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td id="descriptionArea">
+            <p>We have a HOBO MX TidbiT 400 autonomous temperature sensor and want to see how it compares to a "real" Temperature sensor.</p>
+
+<p>I think it is as simple as setting up the HOBO to record for a couple days, and let it hang in the test tank at the same height as the T sensor from a SBE CTD.</p>
+
+<p>Probably want the driver to be running on the SBE CTD, so we can just get the data from Oceans 3.0</p>
+
+<p>This is strictly and engineering test, no Data Stewardship or DAQ requirements on this one.</p>
+
+<p> </p>
+            <br/>
+        </td>
+    </tr>
+    </table>
+
+    <br/>
+
+    <table cellpadding="2" cellspacing="0" border="0" width="100%" align="center">
+    <tr>
+        <td bgcolor="#bbbbbb" width="1%" nowrap align="center">
+            &nbsp;<font color="#ffffff"><b>Comments</b></font>&nbsp;
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="grid" style="margin: 0;">
+                <tr id="comment-header-666249"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="dilumie" id="word_commented_dilumie" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=dilumie">Dilumie Abeysirigunawardena</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">05 Nov 2024</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-666249"><td bgcolor="#ffffff">
+            <p>Sorry removed comment, just noticed DAQ involvement is not needed. <img class="emoticon" src="https://jira.oceannetworks.ca/images/icons/emoticons/smile.png" height="16" width="16" align="absmiddle" alt="" border="0"/></p>
+        </td></tr>
+                <tr id="comment-header-666301"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="shanetheobald" id="word_commented_shanetheobald" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=shanetheobald">Shane Theobald</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">05 Nov 2024</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-666301"><td bgcolor="#ffffff">
+            <p>Attached to cage on reference CTD at ~ 21:10 UTC </p>
+        </td></tr>
+                <tr id="comment-header-666778"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="shanetheobald" id="word_commented_shanetheobald" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=shanetheobald">Shane Theobald</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">07 Nov 2024</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-666778"><td bgcolor="#ffffff">
+            <p>Removed Nov 07, ~15:37 UTC</p>
+        </td></tr>
+                <tr id="comment-header-667727"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="shanetheobald" id="word_commented_shanetheobald" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=shanetheobald">Shane Theobald</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">15 Nov 2024</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-667727"><td bgcolor="#ffffff">
+            <p>One thing I did notice in the data is the HOBO temperature, compared to the reference temperature, was lower and had an accuracy of ~ 0.015 - 0.02 when cooling but was ~ 0.35 - 0.4 when temperature was rising. </p>
+
+<p>Definitely not scientific, just an observation.</p>
+        </td></tr>
+                <tr id="comment-header-667737"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="shanetheobald" id="word_commented_shanetheobald" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=shanetheobald">Shane Theobald</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">15 Nov 2024</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-667737"><td bgcolor="#ffffff">
+            <p><a href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=martin" class="user-hover" rel="martin">Martin Heesemann</a>   Here are the results of the HOBO temperature sensor test compared with our reference CTD.  ( Excuse my limited Excel skills. )</p>
+        </td></tr>
+                <tr id="comment-header-719638"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="matttradewell" id="word_commented_matttradewell" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=matttradewell">Matt Tradewell</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">19 Sep 2025</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-719638"><td bgcolor="#ffffff">
+            <p><a href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=martin" class="user-hover" rel="martin">Martin Heesemann</a> <a href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=hutchij" class="user-hover" rel="hutchij">Jesse Hutchinson</a> Here is the ticket we were chatting about <img class="emoticon" src="https://jira.oceannetworks.ca/images/icons/emoticons/biggrin.png" height="16" width="16" align="absmiddle" alt="" border="0"/></p>
+        </td></tr>
+                <tr id="comment-header-719731"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                        <a class="user-hover" rel="martin" id="word_commented_martin" href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=martin">Martin Heesemann</a>
+                                        <font size="-2">
+            [
+                <font color="#336699">19 Sep 2025</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-719731"><td bgcolor="#ffffff">
+            <p>Awesome <a href="https://jira.oceannetworks.ca/secure/ViewProfile.jspa?name=matttradewell" class="user-hover" rel="matttradewell">Matt Tradewell</a> !</p>
+        </td></tr>
+            </table>
+Generated at Mon May 25 23:47:40 UTC 2026 by Martin Heesemann using Jira 10.3.15#10030015-sha1:909cc43d292ca09e774c1a243d9819be3f2628cd.
+
+</body>
+</html>

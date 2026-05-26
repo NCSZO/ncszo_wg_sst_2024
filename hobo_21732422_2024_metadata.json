@@ -1,0 +1,62 @@
+{
+  "dataset_title": "NCSZO GNSS-A WaveGlider Surface Temperature 2024 (HOBO MX2203)",
+  "instrument": {
+    "model": "HOBO MX2203",
+    "serial_number": "21732422",
+    "manufacturer": "Onset Computer Corporation",
+    "firmware": "62.140",
+    "thermal_time_constant_min": 5.0,
+    "tau_note": "Estimated from cross-correlation with 1-Hz CTD during tank calibration. No response-function correction applied: error at tidal timescale ~0.001 C is 14x smaller than calibration uncertainty."
+  },
+  "deployment": {
+    "platform": "WaveGlider SV3-271",
+    "survey": "NCSZO GNSS-A 2024",
+    "site": "GNSSA-03, Northern Cascadia subduction zone",
+    "start_utc": "2024-09-06T15:51:00Z",
+    "end_utc": "2024-10-06T15:24:00Z",
+    "sampling_interval_s": 60,
+    "raw_timezone": "PDT (UTC-7)",
+    "n_records": 43174,
+    "pre_water_rows": 91,
+    "in_water_start_utc": "2024-09-06T17:22:00Z",
+    "pre_water_note": "First 91 rows: HOBO on deck before water immersion. Detection: temp > 17.0 C OR |dT/dt| > 0.05 C/min (5-min smoothed)."
+  },
+  "calibration": {
+    "facility": "ONC Marine Technology Centre, Victoria BC (48.6495 N, 123.4455 W)",
+    "date_range_utc": "2024-11-05T21:28:00Z to 2024-11-07T15:37:00Z",
+    "reference_instrument": "Sea-Bird SeaCAT SBE19plus V2",
+    "reference_serial": "7036",
+    "reference_sample_rate_hz": 1,
+    "equilibration_period_min": 60,
+    "n_equilibrated_rows": 2452,
+    "offset_mean_c": 0.02803,
+    "offset_median_c": 0.02323,
+    "offset_std_c": 0.0141,
+    "applied_offset_c": 0.023,
+    "correction_formula": "temp_c_calibrated = temp_c_raw + applied_offset_c",
+    "combined_accuracy_1sigma_c": 0.015
+  },
+  "position": {
+    "source": "WaveGlider WGMS telemetry (~5-min) linearly interpolated to 1-min",
+    "n_with_position": 42004,
+    "n_without_position": 1170
+  },
+  "statistics": {
+    "temp_raw_min_c": 10.0252,
+    "temp_raw_max_c": 21.7477,
+    "temp_cal_min_c": 10.0482,
+    "temp_cal_max_c": 21.7707
+  },
+  "licence": "CC BY 4.0",
+  "creators": [
+    {
+      "name": "Martin Heesemann",
+      "email": "mheesema@uvic.ca",
+      "affiliation": "Ocean Networks Canada / University of Victoria"
+    },
+    {
+      "name": "Jesse Hutchinson",
+      "affiliation": "Ocean Networks Canada / University of Victoria"
+    }
+  ]
+}

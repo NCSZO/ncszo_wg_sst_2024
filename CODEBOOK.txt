@@ -1,0 +1,68 @@
+CODEBOOK: hobo_21732422_2024_temperature.csv
+============================================
+
+File format : comma-separated values (CSV), UTF-8, Unix line endings
+Header row  : yes (row 1)
+Missing data: NaN for latitude_deg and longitude_deg during last ~19 h
+              (WaveGlider ashore); all other columns fully populated
+
+COLUMNS
+-------
+
+datetime_utc
+  Type    : ISO 8601 string, UTC
+  Format  : YYYY-MM-DDTHH:MM:SSZ
+  Example : 2024-09-06T15:51:00Z
+  Notes   : Converted from PDT (UTC-7) as recorded by HOBOconnect app.
+            The entire 30-day deployment fell within PDT (DST ends
+            3 Nov 2024).
+
+latitude_deg
+  Type    : float64 or NaN
+  Units   : decimal degrees North (WGS-84)
+  Notes   : WaveGlider position linearly interpolated from WGMS telemetry
+            (~5-min sampling).  NaN for final ~19 h (WaveGlider at port).
+            Rounded to 6 decimal places (~0.1 m precision).
+
+longitude_deg
+  Type    : float64 or NaN
+  Units   : decimal degrees East (WGS-84); negative = West
+  Notes   : Same interpolation as latitude_deg.
+
+temp_c_raw
+  Type    : float64
+  Units   : degrees Celsius (°C)
+  Range   : 10.0 – 21.8 (this deployment)
+  Notes   : As exported from HOBO MX2203 S/N 21732422.  No corrections
+            applied.  Manufacturer spec: accuracy ±0.20 °C, resolution
+            ~0.01 °C.
+
+temp_c_calibrated
+  Type    : float64
+  Units   : degrees Celsius (°C)
+  Notes   : temp_c_raw + +0.023 °C (calibration offset).
+            Combined 1-sigma accuracy (in-water): 0.015 °C.
+            Correction: temp_c_calibrated = temp_c_raw +0.023
+
+deployment_state
+  Type    : string
+  Values  :
+    "pre_water"  First 91 records (before 2024-09-06T17:22:00Z).
+                 HOBO was on deck; readings are air/deck temperature,
+                 not sea surface temperature.  Detected by:
+                   temp_c_raw > 17.0 °C
+                   OR 5-min smoothed |dT/dt| > 0.05 °C/min
+    "in_water"   HOBO immersed; valid sea surface temperature.
+  Notes   : qc_flag is 1 for all rows regardless of deployment_state.
+            Filter on deployment_state == "in_water" for SST analysis.
+
+qc_flag
+  Type    : integer
+  Values  :
+    1  good data — passed all checks
+    2  probably good — minor automated flag (not present in this file)
+    3  probably bad
+    4  bad / failed instrument or global test
+    9  missing / fill value
+  Notes   : All 43174 records carry qc_flag = 1.
+            Flag scheme follows ARGO QC convention (ONC).
